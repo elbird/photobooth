@@ -1,0 +1,13 @@
+{
+    "name": "sebastian/photobooth",
+    "description": "A photo booth software",
+    "authors": [
+        {
+            "name": "Sebastian",
+            "email": "s.vogel@gentics.com"
+        }
+    ],
+    "require": {
+
+    }
+}
