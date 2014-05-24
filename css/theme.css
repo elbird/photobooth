@@ -1,0 +1,33 @@
+
+body {
+padding-top: 60px;
+background: #222;
+color: #fff;
+}
+
+
+.thumb {
+  width: 150px;
+}
+
+
+  div[data-framename="border13"], 
+    div[data-framename="border3"],
+    div[data-framename="border4"],
+    div[data-framename="border5"],
+    div[data-framename="border7"]
+     {
+      display: none;
+    }
+
+
+    .blueimp-gallery > .description {
+  position: absolute;
+  top: 30px;
+  left: 15px;
+  color: #fff;
+  display: none;
+}
+.blueimp-gallery-controls > .description {
+  display: block;
+}
