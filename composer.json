@@ -8,6 +8,6 @@
         }
     ],
     "require": {
-
+        "weotch/phpthumb": "1.*"
     }
 }

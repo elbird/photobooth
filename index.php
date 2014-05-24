@@ -1,4 +1,5 @@
 <?php
+require 'vendor/autoload.php';
 define("BASE_URL", "/photobooth");
 define("URL_NEW", "new");
 define("URL_GALLERY", "gallery");
