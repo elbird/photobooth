@@ -1,21 +1,20 @@
 <?php
-require 'vendor/autoload.php';
-define("BASE_URL", "/photobooth");
-define("URL_NEW", "new");
-define("URL_GALLERY", "gallery");
+require 'lib/defaults.php';
 
 header("Access-Control-Allow-Origin: http://featherfiles.aviary.com");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 
 $currentPage = "";
-$base_path_length = count(split("/", BASE_URL));
-$path = split("/", $_SERVER['REQUEST_URI']);
+$base_path_length = count(explode("/", BASE_URL));
+$path = explode("/", $_SERVER['REQUEST_URI']);
 
 $path = !empty($path[$base_path_length +1]) ? $path[$base_path_length + 1] : '';
 
 $base = "";
 
-switch ($_SERVER['REQUEST_URI']) {
+$requestUri = rtrim($_SERVER['REQUEST_URI'], '/');
+
+switch ($requestUri) {
   case BASE_URL:
   case BASE_URL . "/":
   case BASE_URL . "/" . URL_NEW:
@@ -23,6 +22,9 @@ switch ($_SERVER['REQUEST_URI']) {
     break;
   case BASE_URL . "/" . URL_GALLERY:
     $currentPage = URL_GALLERY;
+    break;
+  case BASE_URL . "/" . URL_TRASH:
+    $currentPage = URL_TRASH;
     break;
   default:
     header("HTTP/1.1 301 Moved Permanently");
@@ -41,11 +43,11 @@ switch ($_SERVER['REQUEST_URI']) {
     <title>Sandra &amp; Sebastian's Photobooth</title>
 
     <!-- Bootstrap -->
-    <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-       <link href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
-<link rel="stylesheet" href="bower_components/blueimp-gallery/css/blueimp-gallery.min.css">
-<link rel="stylesheet" href="bower_components/blueimp-bootstrap-image-gallery/css/bootstrap-image-gallery.min.css">
-<link rel="stylesheet" type="text/css" href="css/theme.css">
+    <link href="<?php echo BASE_URL ?>/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+       <link href="<?php echo BASE_URL ?>/bower_components/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
+<link rel="stylesheet" href="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/css/blueimp-gallery.min.css">
+<link rel="stylesheet" href="<?php echo BASE_URL ?>/bower_components/blueimp-bootstrap-image-gallery/css/bootstrap-image-gallery.min.css">
+<link rel="stylesheet" type="text/css" href="<?php echo BASE_URL ?>/css/theme.css">
 
     
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -55,7 +57,7 @@ switch ($_SERVER['REQUEST_URI']) {
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body role="document">
+  <body role="document" data-url-type="<?php echo $currentPage ?>" data-base-url="<?php echo BASE_URL ?>">
 
   <div id="injection_site"></div>
 
@@ -70,7 +72,17 @@ switch ($_SERVER['REQUEST_URI']) {
     <a class="close">×</a>
     <a class="play-pause"></a>
     <ol class="indicator"></ol>
-    <p class="description"><a class="btn btn-primary edit" href="#">Bearbeiten!</a></p>
+    <p class="description">
+    <?php if ($currentPage == URL_NEW): ?>
+      <a class="btn btn-primary edit" href="#">Bearbeiten</a>
+      <a class="btn btn-success save" href="#">Speichern</a>
+    <?php elseif ($currentPage == URL_TRASH): ?>
+      <a class="btn btn-info restore" href="#">Wiederherstellen</a>
+    <?php endif; ?>
+    <?php if ($currentPage == URL_NEW || $currentPage == URL_GALLERY): ?>
+      <a class="btn btn-danger delete" href="#">Löschen</a>
+    <?php endif; ?>
+    </p>
     <!-- The modal dialog, which will be used to wrap the lightbox content -->
     <div class="modal fade">
         <div class="modal-dialog">
@@ -125,70 +137,26 @@ switch ($_SERVER['REQUEST_URI']) {
        
 
 <div id="links">
-    <a href="test.jpg" title="Test" data-gallery data-description="Beschreibung">
-        <img class="thumb" src="test.jpg" alt="Test">
-    </a>
-   <a href="test.jpg" title="Test" data-gallery>
-                <img class="thumb"  src="test.jpg" alt="Test">
-    </a>
-    <a href="test.jpg" title="Test" data-gallery>
-                <img class="thumb" src="test.jpg" alt="Test">	
-    </a>
+
 </div>
-<p>
-  <?php
-  var_dump($_SERVER);
-  ?>
 
-</p>
-
-  <!--    
-  	<div class="row">
-		  <div class="col-sm-6 col-md-4">
-		    <div class="thumbnail">
-		      <img class="editableImage" id="image1" src="test.jpg" alt="...">
-		      <div class="caption">
-		        <p><a class="btn btn-primary edit" href="#" >Bearbeiten!</a></p>
-		      </div>
-		    </div>
-		  </div>
-		  <div class="col-sm-6 col-md-4">
-		    <div class="thumbnail">
-		      <img class="editableImage"  id="image2" src="test.jpg" alt="...">
-		      <div class="caption">
-		        <p><a class="btn btn-primary edit" href="#" >Bearbeiten!</a></p>
-		      </div>
-		    </div>
-		  </div>
-		  <div class="col-sm-6 col-md-4">
-		    <div class="thumbnail">
-		      <img class="editableImage"  id="image3" src="test.jpg" alt="...">
-		      <div class="caption">
-		        <p><a class="btn btn-primary edit" href="#" >Bearbeiten!</a></p>		
-		      </div>
-		    </div>
-		  </div>
-	</div>
-
-	-->
-			
 
 
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="<?php echo BASE_URL ?>/bower_components/jquery/dist/jquery.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="<?php echo BASE_URL ?>/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <!--<script src="js/docs.min.js"></script> -->
-<script src="bower_components/blueimp-gallery/js/jquery.blueimp-gallery.min.js"></script>
-<script src="bower_components/blueimp-bootstrap-image-gallery/js/bootstrap-image-gallery.js"></script>
+<script src="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/js/jquery.blueimp-gallery.min.js"></script>
+<script src="<?php echo BASE_URL ?>/bower_components/blueimp-bootstrap-image-gallery/js/bootstrap-image-gallery.js"></script>
 <!-- Load widget code -->
 <script type="text/javascript" src="http://feather.aviary.com/js/feather.js"></script>
 
 
 <!-- Instantiate the widget -->
-<script type="text/javascript" src='js/lib.js'></script>                         
+<script type="text/javascript" src='<?php echo BASE_URL ?>/js/lib.js'></script>                         
 
 
   </body>
