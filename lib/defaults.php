@@ -5,6 +5,7 @@ define("BASE_URL", "/photobooth");
 define("URL_NEW", "new");
 define("URL_GALLERY", "gallery");
 define("URL_TRASH", "trash");
+define("URL_SHOW", "show");
 
 function isPhotoboothImage($file) {
 	if(is_file($file) && is_array($imageInfo = getimagesize($file))) {

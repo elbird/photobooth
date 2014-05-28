@@ -5,6 +5,7 @@ header('Content-Type: application/json');
 
 $type;
 switch ($_GET["type"]) {
+	case URL_SHOW:
 	case URL_GALLERY:
 		$type = URL_GALLERY;
 		break;

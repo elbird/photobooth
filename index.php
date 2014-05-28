@@ -26,6 +26,9 @@ switch ($requestUri) {
   case BASE_URL . "/" . URL_TRASH:
     $currentPage = URL_TRASH;
     break;
+  case BASE_URL . "/" . URL_SHOW:
+    $currentPage = URL_SHOW;
+    break;
   default:
     header("HTTP/1.1 301 Moved Permanently");
     $url = !empty($_SERVER['HTTPS']) ? 'https' : 'http';
@@ -75,7 +78,7 @@ switch ($requestUri) {
     <p class="description">
     <?php if ($currentPage == URL_NEW): ?>
       <a class="btn btn-primary edit" href="#">Bearbeiten</a>
-      <a class="btn btn-success save" href="#">Speichern</a>
+      <a class="btn btn-success save" href="#">Sichern</a>
     <?php elseif ($currentPage == URL_TRASH): ?>
       <a class="btn btn-info restore" href="#">Wiederherstellen</a>
     <?php endif; ?>
@@ -117,12 +120,19 @@ switch ($requestUri) {
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
+          <?php if($currentPage != URL_SHOW): ?>
           <a class="navbar-brand" href="#">Photobooth</a>
+          <?php endif; ?>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li<?php echo $currentPage == URL_NEW ? ' class="active"' : ""; ?>><a href="new">Neue</a></li>
-            <li<?php echo $currentPage == URL_GALLERY ? ' class="active"' : ""; ?>><a href="gallery">Gallerie</a></li>
+            <?php if($currentPage == URL_SHOW): ?>
+            <li ><a class="startSlideShow" href="">Start SlideShow</a></li>
+            <?php else: ?>
+            <li<?php echo $currentPage == URL_NEW ? ' class="active"' : ""; ?>><a href="new/">Neue</a></li>
+            <li<?php echo $currentPage == URL_GALLERY ? ' class="active"' : ""; ?>><a href="gallery/">Gallerie</a></li>
+            <li<?php echo $currentPage == URL_TRASH ? ' class="active"' : ""; ?>><a href="trash/">Papierkorb</a></li>
+            <?php endif; ?>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -132,9 +142,9 @@ switch ($requestUri) {
  <div class="container" role="main">
 
        
-         
+         <?php if($currentPage != URL_SHOW): ?>
             <h1 class="cover-heading">Sandra &amp; Sebastian's Photobooth</h1>
-       
+       <?php endif; ?>
 
 <div id="links">
 
@@ -149,15 +159,36 @@ switch ($requestUri) {
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="<?php echo BASE_URL ?>/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <!--<script src="js/docs.min.js"></script> -->
-<script src="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/js/jquery.blueimp-gallery.min.js"></script>
+
+<!--<script src="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/js/blueimp-helper.js"></script> 
+<script src="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/js/blueimp-gallery.js"></script>
+<script src="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/js/blueimp-gallery-fullscreen.js"></script>
+<script src="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/js/blueimp-gallery-indicator.js"></script>-->
+<script src="<?php echo BASE_URL ?>/js/jquery.blueimp-gallery.min.js"></script>
 <script src="<?php echo BASE_URL ?>/bower_components/blueimp-bootstrap-image-gallery/js/bootstrap-image-gallery.js"></script>
 <!-- Load widget code -->
 <script type="text/javascript" src="http://feather.aviary.com/js/feather.js"></script>
 
 
 <!-- Instantiate the widget -->
-<script type="text/javascript" src='<?php echo BASE_URL ?>/js/lib.js'></script>                         
-
+<script type="text/javascript" src='<?php echo BASE_URL ?>/js/lib.js'></script> 
+<?php if($currentPage == URL_SHOW): ?>
+<script type="text/javascript">
+    /* global $, photobooth */
+    $(function () {
+      'use strict';
+      photobooth.init(true);
+    });
+</script>                        
+<?php else: ?>
+<script type="text/javascript">
+    /* global $, photobooth */
+    $(function () {
+      'use strict';
+      photobooth.init(false);
+    });
+</script> 
+<?php endif; ?>
 
   </body>
 </html>

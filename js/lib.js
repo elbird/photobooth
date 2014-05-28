@@ -2,14 +2,20 @@
 (function (document, window, $, Aviary) {
     'use strict';
     var $gallery,
+        myGallery,
         getImagesRequest,
         baseUrl,
-        urlType;
+        urlType,
+        slideshow = false;
 
     function createNewLink(url) {
         var $link = $('<a data-gallery></a>'),
             $img = $('<img class="thumb"></img>');
         $link.attr('href', url);
+        if(slideshow) {
+            //$link.text('test');
+            return $link;
+        }
         $img.attr('src', baseUrl + '/lib/getThumbnail.php?image=' + encodeURIComponent(url));
         $link.append($img);
         return $link;
@@ -27,7 +33,7 @@
             },
             dataType: 'json'
         });
-        getImagesRequest.then(function (data) {
+        return getImagesRequest.then(function (data) {
             var i,
                 $linksContainer = $('#links'),
                 $currentLinks = $linksContainer.find('a'),
@@ -52,12 +58,16 @@
                     $linksContainer.prepend(createNewLink(data.imageurls[i]));
                 }
             }
+            return $linksContainer;
         });
  
     }
 
     function gallery() {
-        return $gallery.data('gallery');
+        if(myGallery) {
+            return myGallery;
+        }
+        return  $gallery.data('gallery');
     }
 	function postToServer (action, currentUrl, newUrl) {
 		var data = {
@@ -99,6 +109,10 @@
     function getCurrentImageUrl() {
         return $(gallery().list[gallery().getIndex()]).attr('href');
     }
+
+    function startSlideShow() {
+        $('#links').find('a').first().click();
+    }
     function registerEventHandler () {
         $(document).on('click', '.edit', function(e) {
             e.preventDefault();
@@ -130,33 +144,73 @@
                 document.location = baseUrl + '/new';
             });
         });
-        $(document).on('slidecomplete', function (e, index, slide) {
+        $(document).on('click', '.startSlideShow', function(e) {
+           e.preventDefault();
+           startSlideShow();
+        });
+        $(document).on('slidecomplete', function (e, index, slide, gallery) {
+            console.log(arguments);
             $(slide).find('img').attr('id', 'id-slide-' + index);
         });
-        // click on the image to show controls immeadiatly
-        $(document).on('opened', function () {
-
-            var controlsClass = gallery().options.controlsClass;
-
-            if (!gallery().container.hasClass(controlsClass)) {
-                gallery().container.addClass(controlsClass);
-            } 
+        
+        $('#blueimp-gallery').on('opened', function (e, gallery) {
+                myGallery = gallery;
         });
+        if(!slideshow) {
+            // click on the image to show controls immeadiatly
+            $(document).on('opened', function (e, gallery) {
+                var controlsClass = gallery.options.controlsClass;
+
+                if (!gallery.container.hasClass(controlsClass)) {
+                    gallery.container.addClass(controlsClass);
+                } 
+            });
+        }
+        if(slideshow){
+            $(document).on('slideend', function (e, index, slide, gallery) {
+                if (gallery && gallery.slides && gallery.slides.length === index + 1) {
+                    window.setTimeout(function () {
+                        $(document).one('closed', function () {
+                            startSlideShow();
+                        });
+                        gallery.close();
+                    }, 3500);
+                }
+            });
+        }
     }
     // wait for document ready
-    $(function () {
-        urlType = $('body').data('urlType');
-        baseUrl = $('body').data('baseUrl');
-        updateLinks();
-        window.setInterval(updateLinks, 10000);
 
-        registerEventHandler();
+    window.photobooth = {
+        init: function (show) {
+            var linksLoadedPromise,
+                galleryConfig  = {
+                useBootstrapModal: false
+            };
+            if(show) {
+                slideshow = true;
+            }
+            if(slideshow) {
+                galleryConfig.startSlideshow = true;
+                galleryConfig.transitionSpeed = 2000;
+                galleryConfig.closeOnSlideClick = false;
+            }
+            urlType = $('body').data('urlType');
+            baseUrl = $('body').data('baseUrl');
+            linksLoadedPromise = updateLinks();
+            window.setInterval(updateLinks, 10000);
 
-        $gallery = $('#blueimp-gallery');
-        $gallery.data({
-            useBootstrapModal: false
-        });
+            registerEventHandler(slideshow);
 
-    });
+            $gallery = $('#blueimp-gallery');
+            $gallery.data(galleryConfig);
+            if(slideshow) {
+                linksLoadedPromise.then(function ($linksContainer) {
+                    startSlideShow();
+                });
+            }
+        }
+
+    };
 
 }(document, window, jQuery, Aviary));
