@@ -1,8 +1,10 @@
 
 body {
 padding-top: 60px;
-background: #222;
+background: #f5c0a9; /*#222;*/
 color: #fff;
+font-family: 'geosanslightregular';
+font-size: 16px;
 }
 
 
@@ -30,4 +32,73 @@ color: #fff;
 }
 .blueimp-gallery-controls > .description {
   display: block;
+}
+
+#links a img {
+  margin-left: 5px;
+  margin-bottom: 5px;
+}
+#myModal {
+  color: black;
+}
+
+.navbar-inverse {
+background-image: url('./background2.png');
+}
+.navbar-inverse {
+background-color: #f7a37e;
+
+border: none;
+border-color: #f7a37e;
+color: #fff;
+}
+
+.navbar-inverse .navbar-brand, .navbar-inverse .navbar-nav>li>a {
+color: #fff;
+}
+
+.navbar-inverse .navbar-nav>.active>a {
+background-color: #f5c0a9;  
+background-image: none; 
+-webkit-box-shadow: inset 0 3px 9px rgba(245,163,127,.90);
+box-shadow: inset 0 3px 9px rgba(245,163,127,.90);
+}
+
+.navbar-inverse .navbar-nav>.active>a:hover, .navbar-inverse .navbar-nav>.active>a:focus {
+color: #fff;
+background-color: #f7a37e;
+}
+
+div.heading-container {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+.heading {
+  padding-right: 5px;
+  padding-left: 5px;
+  background-color: #bfe08d;
+}
+
+h1.cover-heading {
+  margin-top: 6px;
+  margin-bottom: 5px
+}
+
+.heading-right {
+  font-size: 0px; line-height: 0%; width: 0px;
+  border-top: 25px solid #bfe08d;
+  border-bottom: 25px solid #bfe08d;
+  border-left: none;
+  border-right: 20px solid #f5c0a9;
+}
+.heading-left {
+  font-size: 0px; line-height: 0%; width: 0px;
+  border-top: 25px solid #bfe08d;
+  border-bottom: 25px solid #bfe08d;
+  border-right: none;
+  border-left: 20px solid #f5c0a9;
+}
+
+.close {
+  font-family: verdana
 }

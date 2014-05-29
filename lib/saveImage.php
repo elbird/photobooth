@@ -2,7 +2,6 @@
 require 'defaults.php';
 header("Content-Type: application/json");
 
-
 $action = "save";
 if(!empty($_POST['action'])) {
 	switch ($_POST['action']) {

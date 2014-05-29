@@ -46,6 +46,7 @@ switch ($requestUri) {
     <title>Sandra &amp; Sebastian's Photobooth</title>
 
     <!-- Bootstrap -->
+    <link href="<?php echo BASE_URL ?>/fonts/stylesheet.css" rel="stylesheet">
     <link href="<?php echo BASE_URL ?>/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
        <link href="<?php echo BASE_URL ?>/bower_components/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
 <link rel="stylesheet" href="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/css/blueimp-gallery.min.css">
@@ -63,6 +64,21 @@ switch ($requestUri) {
   <body role="document" data-url-type="<?php echo $currentPage ?>" data-base-url="<?php echo BASE_URL ?>">
 
   <div id="injection_site"></div>
+
+  <div id="myModal" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Bild wird aufbereitet</h4>
+      </div>
+      <div class="modal-body">
+        <p>Bitte warten, das Bild wird für die Bildergalerie aufbereitet   &hellip;</p>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 
   <!-- The Bootstrap Image Gallery lightbox, should be a child element of the document body -->
 <div id="blueimp-gallery" class="blueimp-gallery">
@@ -121,7 +137,7 @@ switch ($requestUri) {
             <span class="icon-bar"></span>
           </button>
           <?php if($currentPage != URL_SHOW): ?>
-          <a class="navbar-brand" href="#">Photobooth</a>
+          <a class="navbar-brand" href="<?php echo BASE_URL ?>/new/">Photobooth</a>
           <?php endif; ?>
         </div>
         <div class="navbar-collapse collapse">
@@ -129,9 +145,9 @@ switch ($requestUri) {
             <?php if($currentPage == URL_SHOW): ?>
             <li ><a class="startSlideShow" href="">Start SlideShow</a></li>
             <?php else: ?>
-            <li<?php echo $currentPage == URL_NEW ? ' class="active"' : ""; ?>><a href="new/">Neue</a></li>
-            <li<?php echo $currentPage == URL_GALLERY ? ' class="active"' : ""; ?>><a href="gallery/">Gallerie</a></li>
-            <li<?php echo $currentPage == URL_TRASH ? ' class="active"' : ""; ?>><a href="trash/">Papierkorb</a></li>
+            <li<?php echo $currentPage == URL_NEW ? ' class="active"' : ""; ?>><a href="<?php echo BASE_URL ?>/new/">Neue</a></li>
+            <li<?php echo $currentPage == URL_GALLERY ? ' class="active"' : ""; ?>><a href="<?php echo BASE_URL ?>/gallery/">Galerie</a></li>
+            <li<?php echo $currentPage == URL_TRASH ? ' class="active"' : ""; ?>><a href="<?php echo BASE_URL ?>/trash/">Papierkorb</a></li>
             <?php endif; ?>
           </ul>
         </div><!--/.nav-collapse -->
@@ -140,10 +156,39 @@ switch ($requestUri) {
 
 
  <div class="container" role="main">
+  <div id="alerts"></div> 
+       <div class="heading-container">
+        <div class="heading-left pull-left"></div>
+        <div class="heading pull-left">
+         <?php if($currentPage == URL_NEW): ?>
+            <h1 class="cover-heading">Sandra &amp; Sebastians Photobooth</h1>
+          <?php elseif($currentPage === URL_GALLERY): ?>
+            <h1 class="cover-heading">Bildergalerie</h1>
+          <?php elseif($currentPage === URL_TRASH): ?>
+            <h1 class="cover-heading">Papierkorb</h1>
+       <?php endif; ?>
+       </div>
+       <div class="heading-right pull-left"></div>
+       <div class="clearfix"></div>
+       </div>
 
-       
-         <?php if($currentPage != URL_SHOW): ?>
-            <h1 class="cover-heading">Sandra &amp; Sebastian's Photobooth</h1>
+      <?php if($currentPage == URL_NEW): ?>
+            <p>
+              Hier könnt ihr die aufgenommen Bilder abspeichern oder bearbeiten:
+              <ul>
+              <li>Gespeicherte Bilder kommen in die Galerie und werden am Beamer angezeigt.</li>
+              <li>Bilder die euch nicht gefallen könnt ihr löschen,</li>
+              <li>gelöschte Bilder werden in den <a href="<?php echo BASE_URL ?>/trash/">Papierkorb</a>  verschoben.</li>
+              </ul>
+              <p><b>Klick auf ein Bild öffnet die Bearbeitungsansicht!</b>
+            </p>
+          <?php elseif($currentPage === URL_GALLERY): ?>
+            <p>Alle Bilder die ihr hier seht werden auch am Beamer angezeigt</p>
+          <?php elseif($currentPage === URL_TRASH): ?>
+            <p>Das ist der Papierkorb, ihr könnt versehentlich gelöschte Bilder wiederherstellen. <br /> 
+            Wiederhergestellte Bilder werden bei den <a href="<?php echo BASE_URL ?>/new/">neuen Bildern</a> angezeigt <br/>
+            Beim Speichern eines Bildes wird das Original auch im Papierkorb abgelegt
+            </p>
        <?php endif; ?>
 
 <div id="links">
@@ -160,35 +205,31 @@ switch ($requestUri) {
     <script src="<?php echo BASE_URL ?>/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <!--<script src="js/docs.min.js"></script> -->
 
-<!--<script src="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/js/blueimp-helper.js"></script> 
-<script src="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/js/blueimp-gallery.js"></script>
-<script src="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/js/blueimp-gallery-fullscreen.js"></script>
-<script src="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/js/blueimp-gallery-indicator.js"></script>-->
-<script src="<?php echo BASE_URL ?>/js/jquery.blueimp-gallery.min.js"></script>
-<script src="<?php echo BASE_URL ?>/bower_components/blueimp-bootstrap-image-gallery/js/bootstrap-image-gallery.js"></script>
-<!-- Load widget code -->
-<script type="text/javascript" src="http://feather.aviary.com/js/feather.js"></script>
 
+<script src="<?php echo BASE_URL ?>/bower_components/blueimp-gallery/js/jquery.blueimp-gallery.min.js"></script>
+<script src="<?php echo BASE_URL ?>/bower_components/blueimp-bootstrap-image-gallery/js/bootstrap-image-gallery.js"></script>
 
 <!-- Instantiate the widget -->
 <script type="text/javascript" src='<?php echo BASE_URL ?>/js/lib.js'></script> 
-<?php if($currentPage == URL_SHOW): ?>
 <script type="text/javascript">
     /* global $, photobooth */
     $(function () {
       'use strict';
-      photobooth.init(true);
+      photobooth.init();
     });
 </script>                        
-<?php else: ?>
+<?php if($currentPage != URL_SHOW): ?>
+<!--<script type="text/javascript" src="http://feather.aviary.com/js/feather.js">-->
 <script type="text/javascript">
-    /* global $, photobooth */
+/* global $ */
     $(function () {
       'use strict';
-      photobooth.init(false);
+      $.getScript('http://feather.aviary.com/js/feather.js');
     });
-</script> 
+</script>
+
 <?php endif; ?>
+
 
   </body>
 </html>

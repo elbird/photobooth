@@ -1,12 +1,26 @@
-/* global document, window, jQuery, Aviary */
-(function (document, window, $, Aviary) {
+/* global document, window, jQuery */
+(function (document, window, $) {
     'use strict';
     var $gallery,
-        myGallery,
         getImagesRequest,
         baseUrl,
         urlType,
+        featherEditor,
         slideshow = false;
+
+    function showAlert() {
+        var alertContainer = $('#alerts'),
+            div = $('<div id="photoboothSaveAlert"></div>').addClass('alert alert-danger fade in');
+        div.append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>');
+        div.append('<h4>Das Bild konnten leider nicht verarbeitet werden</h4>');
+        div.append('<p>Bitte versuche es noch einmal.</p>');
+        div.append('<p><button type="button" class="btn btn-default closeAlert" >Ok</button>');
+        alertContainer.append(div);
+        $(div).on('click', '.closeAlert', function (e) {
+            e.preventDefault();
+            div.alert('close');
+        });
+    }
 
     function createNewLink(url) {
         var $link = $('<a data-gallery></a>'),
@@ -63,10 +77,7 @@
  
     }
 
-    function gallery() {
-        if(myGallery) {
-            return myGallery;
-        }
+    function getGallery() {
         return  $gallery.data('gallery');
     }
 	function postToServer (action, currentUrl, newUrl) {
@@ -82,32 +93,44 @@
 			dataType: 'json'
 		});
 	}
-
-    var featherEditor = new Aviary.Feather({
-        apiKey: '8b3b6b313be62991',
-        apiVersion: 3,
-        language: 'de',
-        enableCORS: true,
-        tools: ['text', 'crop', 'resize', 'frames', 'effects', 'stickers', 'colorsplash'],
-        appendTo: 'injection_site',
-        onReady: function() {
-            gallery().close();
-        },
-        onSave: function(imageID, newURL) {
-            var currentUrl = $('a[data-aviary-id-slide=' + imageID + ']').attr('href');
-        	postToServer('save', currentUrl, newURL).then(function () {
-        		document.location = baseUrl + '/gallery';
-        	});
-            featherEditor.close();
-
+    function ensureFeatherEditor () {
+        // check if Aviary is already available or featherEditor is already initialized
+        if(!window.Aviary) {
+            $('a.edit').hide();
+            return;
         }
-    });
+        featherEditor = featherEditor || new window.Aviary.Feather({
+            apiKey: '8b3b6b313be62991',
+            apiVersion: 3,
+            language: 'de',
+            enableCORS: true,
+            tools: ['text','frames', 'effects', 'stickers', 'colorsplash'],
+            appendTo: 'injection_site',
+            onReady: function() {
+                getGallery().close();
+            },
+            onSave: function(imageID, newURL) {
+                var currentUrl = $('a[data-aviary-id-slide=' + imageID + ']').attr('href');
+                $('#myModal').modal('show');
+            	postToServer('save', currentUrl, newURL).then(function () {
+                    $('#myModal').modal('hide');
+            		document.location = baseUrl + '/gallery';
+            	}, function () {
+                    $('#myModal').modal('hide');
+                    showAlert();
+                });
+                featherEditor.close();
+
+            }
+        });
+        $('a.edit').show();
+    }
 
     function getCurrentImageId () {
-        return 'id-slide-' + gallery().getIndex();
+        return 'id-slide-' + getGallery().getIndex();
     }
     function getCurrentImageUrl() {
-        return $(gallery().list[gallery().getIndex()]).attr('href');
+        return $(getGallery().list[getGallery().getIndex()]).attr('href');
     }
 
     function startSlideShow() {
@@ -117,7 +140,10 @@
         $(document).on('click', '.edit', function(e) {
             e.preventDefault();
             var imageID = getCurrentImageId();
-            $(gallery().list[gallery().getIndex()]).attr('data-aviary-id-slide', imageID);
+            if(!featherEditor) {
+                return;
+            }
+            $(getGallery().list[getGallery().getIndex()]).attr('data-aviary-id-slide', imageID);
             featherEditor.launch({
                 image: imageID
             });
@@ -125,8 +151,14 @@
         $(document).on('click', '.save', function(e) {
             e.preventDefault();
             var imageUrl = getCurrentImageUrl();
+            getGallery().close(),
+            $('#myModal').modal('show');
             postToServer('save', imageUrl, document.location.origin + imageUrl).then(function () {
+                $('#myModal').modal('hide');
                 document.location = baseUrl + '/gallery';
+            }, function () {
+                $('#myModal').modal('hide');
+                showAlert();
             });
         });
         $(document).on('click', '.delete', function(e) {
@@ -134,7 +166,7 @@
             var imageUrl = getCurrentImageUrl();
             postToServer('delete', imageUrl).then(function () {
                 updateLinks();
-                gallery().close();
+                getGallery().close();
             });
         });
         $(document).on('click', '.restore', function(e) {
@@ -148,18 +180,20 @@
            e.preventDefault();
            startSlideShow();
         });
-        $(document).on('slidecomplete', function (e, index, slide, gallery) {
-            console.log(arguments);
+        $(document).on('slidecomplete', function (e, index, slide) {
             $(slide).find('img').attr('id', 'id-slide-' + index);
         });
-        
-        $('#blueimp-gallery').on('opened', function (e, gallery) {
-                myGallery = gallery;
+        $(document).on('slideend', function () {
+            if(!slideshow) {
+                ensureFeatherEditor();
+            }
         });
+
         if(!slideshow) {
             // click on the image to show controls immeadiatly
-            $(document).on('opened', function (e, gallery) {
-                var controlsClass = gallery.options.controlsClass;
+            $(document).on('opened', function () {
+                var gallery = getGallery(),
+                    controlsClass = gallery.options.controlsClass;
 
                 if (!gallery.container.hasClass(controlsClass)) {
                     gallery.container.addClass(controlsClass);
@@ -167,50 +201,61 @@
             });
         }
         if(slideshow){
-            $(document).on('slideend', function (e, index, slide, gallery) {
+            $(document).on('slideend', function (e, index) {
+                var gallery = getGallery();
                 if (gallery && gallery.slides && gallery.slides.length === index + 1) {
+                    // last slide detected pause the gallery
+                    gallery.pause();
+                    // show the current slide as long as the others
                     window.setTimeout(function () {
+                        // register event handler for closed event and start the slideshow again when the closing animation is done
                         $(document).one('closed', function () {
-                            startSlideShow();
+                            // start the slideshow earliest at the next tick to make sure that the gallery is closed properly
+                            window.setTimeout(function () {
+                                startSlideShow();
+                            }, 0);
                         });
+                        // close the gallery
                         gallery.close();
-                    }, 3500);
+                    }, gallery.options.slideshowInterval);
                 }
             });
         }
     }
-    // wait for document ready
-
-    window.photobooth = {
-        init: function (show) {
+    var photobooth = {
+        // the init method should be called on document ready!
+        init: function () {
             var linksLoadedPromise,
+                updateInterval = 1500,
                 galleryConfig  = {
                 useBootstrapModal: false
             };
-            if(show) {
+            urlType = $('body').data('urlType');
+            baseUrl = $('body').data('baseUrl');
+            if(urlType === 'show') {
                 slideshow = true;
             }
             if(slideshow) {
                 galleryConfig.startSlideshow = true;
                 galleryConfig.transitionSpeed = 2000;
                 galleryConfig.closeOnSlideClick = false;
+                updateInterval = 10000;
             }
-            urlType = $('body').data('urlType');
-            baseUrl = $('body').data('baseUrl');
+            
             linksLoadedPromise = updateLinks();
-            window.setInterval(updateLinks, 10000);
+            window.setInterval(updateLinks, updateInterval);
 
             registerEventHandler(slideshow);
 
             $gallery = $('#blueimp-gallery');
             $gallery.data(galleryConfig);
             if(slideshow) {
-                linksLoadedPromise.then(function ($linksContainer) {
+                linksLoadedPromise.then(function () {
                     startSlideShow();
                 });
             }
-        }
-
+        },
+        showAlert: showAlert
     };
-
-}(document, window, jQuery, Aviary));
+    window.photobooth = photobooth;
+}(document, window, jQuery));
